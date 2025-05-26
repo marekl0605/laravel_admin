@@ -14,7 +14,7 @@ Route::prefix('auth')->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:api');
 });
 
-Route::middleware('auth:api')->prefix('users')->group(function () {
+Route::middleware(['auth:api', 'admin'])->prefix('users')->group(function () {
     Route::get('/', [UserController::class, 'index']);
     Route::get('/{user}', [UserController::class, 'show']);
     Route::put('/{user}', [UserController::class, 'update']);
