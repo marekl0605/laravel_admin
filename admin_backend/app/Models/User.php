@@ -11,27 +11,15 @@ class User extends Authenticatable implements JWTSubject
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = [
-        'username',
-        'email',
-        'password',
-        'two_factor_secret',
-        'two_factor_confirmed_at',
-        'two_factor_recovery_codes',
-    ];
+    protected $fillable = ['username', 'email', 'password'];
+    protected $hidden = ['password'];
 
-    protected $hidden = [
-        'password',
-        'two_factor_secret',
-        'two_factor_recovery_codes',
-    ];
-
-    public function getJWTIdentifier()
+    public function getJWTIdentifier(): int
     {
         return $this->getKey();
     }
 
-    public function getJWTCustomClaims()
+    public function getJWTCustomClaims(): array
     {
         return [];
     }

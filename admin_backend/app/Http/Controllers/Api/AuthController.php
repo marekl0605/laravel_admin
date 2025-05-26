@@ -9,11 +9,11 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    public function register(Request $request): \Illuminate\Http\JsonResponse
     {
         $validated = $request->validate([
-            'username' => 'required|string|unique:users',
-            'email' => 'required|email|unique:users',
+            'username' => 'required|string|max:255|unique:users',
+            'email' => 'required|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
@@ -32,7 +32,7 @@ class AuthController extends Controller
         ], 201);
     }
 
-    public function login(Request $request)
+    public function login(Request $request): \Illuminate\Http\JsonResponse
     {
         $validated = $request->validate([
             'email' => 'required|email',
@@ -49,9 +49,10 @@ class AuthController extends Controller
         ]);
     }
 
-    public function logout()
+    public function logout(): \Illuminate\Http\JsonResponse
     {
         JWTAuth::invalidate(JWTAuth::getToken());
+
         return response()->json(['message' => 'Logged out successfully']);
     }
 }
