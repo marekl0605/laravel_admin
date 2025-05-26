@@ -16,6 +16,7 @@ class RoleSeeder extends Seeder
         $admin = User::where('email', 'andrew0605996@gmail.com')->first();
         if ($admin) {
             $admin->roles()->attach(Role::where('name', 'admin')->first());
+            $admin->companies()->attach(1); // Assuming company ID 1 exists
         }
     }
 }
