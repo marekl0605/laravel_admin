@@ -10,9 +10,13 @@ class PersonController extends Controller
 {
     public function index(Request $request): \Illuminate\Http\JsonResponse
     {
-        $people = $request->user()->hasRole('admin')
-            ? Person::all()
-            : Person::whereHas('companies', fn($q) => $q->whereIn('companies.id', $request->user()->companies->pluck('id')))->get();
+        $query = Person::with('companies');
+
+        if (!$request->user()->hasRole('admin') && !$request->user()->hasPermission('manage-people')) {
+            $query->whereHas('companies', fn($q) => $q->whereIn('companies.id', $request->user()->companies->pluck('id')));
+        }
+
+        $people = $query->paginate(10);
         return response()->json(['people' => $people]);
     }
 

@@ -15,11 +15,11 @@ class PersonPolicy
 
     public function update(User $user, Person $person): bool
     {
-        return $user->hasRole('admin');
+        return $user->hasRole('admin') || $user->hasPermission('manage-people');
     }
 
     public function delete(User $user, Person $person): bool
     {
-        return $user->hasRole('admin');
+        return $user->hasRole('admin') || $user->hasPermission('manage-people');
     }
 }

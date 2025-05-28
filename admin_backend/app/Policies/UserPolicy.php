@@ -14,11 +14,11 @@ class UserPolicy
 
     public function update(User $authUser, User $user): bool
     {
-        return $authUser->hasRole('admin');
+        return $authUser->hasRole('admin') || $authUser->hasPermission('manage-users');
     }
 
     public function delete(User $authUser, User $user): bool
     {
-        return $authUser->hasRole('admin');
+        return $authUser->hasRole('admin') || $authUser->hasPermission('manage-users');
     }
 }

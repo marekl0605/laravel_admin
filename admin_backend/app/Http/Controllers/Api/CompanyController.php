@@ -10,12 +10,13 @@ class CompanyController extends Controller
 {
     public function index(Request $request): \Illuminate\Http\JsonResponse
     {
-        $companies = $request->user()->hasRole('admin')
-            ? Company::all()
-            : $request->user()->companies;
+        $query = Company::query();
+        if (!$request->user()->hasRole('admin')) {
+            $query->whereHas('users', fn($q) => $q->where('users.id', $request->user()->id));
+        }
+        $companies = $query->paginate(10);
         return response()->json(['companies' => $companies]);
     }
-
     public function store(Request $request): \Illuminate\Http\JsonResponse
     {
         $validated = $request->validate([

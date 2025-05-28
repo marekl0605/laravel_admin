@@ -3,16 +3,32 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\User;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
+    use AuthorizesRequests;
+
     public function index(Request $request): \Illuminate\Http\JsonResponse
     {
-        $users = $request->user()->hasRole('admin')
-            ? User::all()
-            : User::whereHas('companies', fn($q) => $q->whereIn('companies.id', $request->user()->companies->pluck('id')))->get();
+        $search = $request->query('search');
+        $query = User::with(['roles', 'companies']);
+
+        if (!$request->user()->hasRole('admin') && !$request->user()->hasPermission('view-users')) {
+            $query->whereHas('companies', fn($q) => $q->whereIn('companies.id', $request->user()->companies->pluck('id')));
+        }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('username', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query->paginate(10);
         return response()->json(['users' => $users]);
     }
 
@@ -57,13 +73,30 @@ class UserController extends Controller
             $user->people()->sync($validated['person_ids']);
         }
 
-        return response()->json(['message' => 'User updated', 'user' => $user]);
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'update',
+            'entity_type' => 'user',
+            'entity_id' => $user->id,
+            'details' => $validated,
+        ]);
+
+        return response()->json(['message' => 'User updated', 'user' => $user->load(['companies', 'people'])]);
     }
 
     public function destroy(User $user): \Illuminate\Http\JsonResponse
     {
         $this->authorize('delete', $user);
         $user->delete();
+
+        AuditLog::create([
+            'user_id' => auth('api')->id(),
+            'action' => 'delete',
+            'entity_type' => 'user',
+            'entity_id' => $user->id,
+            'details' => ['username' => $user->username],
+        ]);
+
         return response()->json(['message' => 'User deleted']);
     }
 }

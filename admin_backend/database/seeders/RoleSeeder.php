@@ -10,13 +10,16 @@ class RoleSeeder extends Seeder
 {
     public function run(): void
     {
-        Role::create(['name' => 'admin']);
-        Role::create(['name' => 'user']);
+        $adminRole = Role::create(['name' => 'admin']);
+        $userRole = Role::create(['name' => 'user']);
 
-        $admin = User::where('email', 'andrew0605996@gmail.com')->first();
-        if ($admin) {
-            $admin->roles()->attach(Role::where('name', 'admin')->first());
-            $admin->companies()->attach(1); // Assuming company ID 1 exists
-        }
+        $admin = User::create([
+            'username' => 'admin',
+            'email' => 'admin@example.com',
+            'password' => bcrypt('password123'),
+        ]);
+        $admin->roles()->attach($adminRole);
+        $admin->companies()->attach(1);
+        $admin->people()->attach(1);
     }
 }

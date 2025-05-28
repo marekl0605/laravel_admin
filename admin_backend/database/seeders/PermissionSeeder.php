@@ -14,6 +14,7 @@ class PermissionSeeder extends Seeder
             ['name' => 'manage-users', 'description' => 'Manage all users'],
             ['name' => 'manage-companies', 'description' => 'Manage companies'],
             ['name' => 'manage-people', 'description' => 'Manage people'],
+            ['name' => 'view-users', 'description' => 'View users'],
         ];
 
         foreach ($permissions as $perm) {
@@ -21,8 +22,6 @@ class PermissionSeeder extends Seeder
         }
 
         $adminRole = Role::where('name', 'admin')->first();
-        if ($adminRole) {
-            $adminRole->permissions()->attach(Permission::all()->pluck('id'));
-        }
+        $adminRole->permissions()->attach(Permission::all()->pluck('id'));
     }
 }
