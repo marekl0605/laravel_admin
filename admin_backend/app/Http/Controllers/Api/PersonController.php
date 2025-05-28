@@ -3,11 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditLog;
 use App\Models\Person;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 
 class PersonController extends Controller
 {
+    use AuthorizesRequests;
+
     public function index(Request $request): \Illuminate\Http\JsonResponse
     {
         $query = Person::with('companies');
@@ -20,8 +24,15 @@ class PersonController extends Controller
         return response()->json(['people' => $people]);
     }
 
+    public function show(Person $person): \Illuminate\Http\JsonResponse
+    {
+        $this->authorize('view', $person);
+        return response()->json(['person' => $person->load('companies')]);
+    }
+
     public function store(Request $request): \Illuminate\Http\JsonResponse
     {
+        $this->authorize('create', Person::class);
         $validated = $request->validate([
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
@@ -35,13 +46,16 @@ class PersonController extends Controller
         if (isset($validated['company_ids'])) {
             $person->companies()->sync($validated['company_ids']);
         }
-        return response()->json(['message' => 'Person created', 'person' => $person], 201);
-    }
 
-    public function show(Person $person): \Illuminate\Http\JsonResponse
-    {
-        $this->authorize('view', $person);
-        return response()->json(['person' => $person->load('companies')]);
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'create',
+            'entity_type' => 'person',
+            'entity_id' => $person->id,
+            'details' => $validated,
+        ]);
+
+        return response()->json(['message' => 'Person created', 'person' => $person->load('companies')], 201);
     }
 
     public function update(Request $request, Person $person): \Illuminate\Http\JsonResponse
@@ -60,13 +74,31 @@ class PersonController extends Controller
         if (isset($validated['company_ids'])) {
             $person->companies()->sync($validated['company_ids']);
         }
-        return response()->json(['message' => 'Person updated', 'person' => $person]);
+
+        AuditLog::create([
+            'user_id' => $request->user()->id,
+            'action' => 'update',
+            'entity_type' => 'person',
+            'entity_id' => $person->id,
+            'details' => $validated,
+        ]);
+
+        return response()->json(['message' => 'Person updated', 'person' => $person->load('companies')]);
     }
 
     public function destroy(Person $person): \Illuminate\Http\JsonResponse
     {
         $this->authorize('delete', $person);
         $person->delete();
+
+        AuditLog::create([
+            'user_id' => auth('api')->id(),
+            'action' => 'delete',
+            'entity_type' => 'person',
+            'entity_id' => $person->id,
+            'details' => ['email' => $person->email],
+        ]);
+
         return response()->json(['message' => 'Person deleted']);
     }
 }

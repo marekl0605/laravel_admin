@@ -63,6 +63,6 @@ Route::middleware('auth:api')->group(function () {
         });
     });
 
-    Route::get('/dashboard', [DashboardController::class, 'index']);
+    Route::middleware('auth:api')->get('/dashboard', [DashboardController::class, 'index']);
     Route::middleware('admin')->get('/audit-logs', [AuditLogController::class, 'index']);
 });

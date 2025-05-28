@@ -13,9 +13,10 @@ use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvid
 class AuthServiceProvider extends ServiceProvider
 {
     protected $policies = [
-        Company::class => CompanyPolicy::class,
-        Person::class => PersonPolicy::class,
-        User::class => UserPolicy::class,
+        \App\Models\Company::class => \App\Policies\CompanyPolicy::class,
+        \App\Models\Person::class => \App\Policies\PersonPolicy::class,
+        \App\Models\User::class => \App\Policies\UserPolicy::class,
+        \App\Models\AuditLog::class => \App\Policies\AuditLogPolicy::class,
     ];
 
     public function boot(): void
