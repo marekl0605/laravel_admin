@@ -11,6 +11,7 @@ Route::get('/', function () {
     return Inertia::render('welcome');
 })->name('home');
 
+//make the registed user as admin
 
 Route::get('/api/test/make/admin', function () {
     $user = auth()->user();
