@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 // COMPANIES ROUTES
 // ==============================================
 
-Route::prefix('/api/v1')->group(function () {
+Route::prefix('/api/v1')->middleware('auth')->group(function () {
 
     Route::prefix('companies')->group(function () {
         // Standard CRUD operations

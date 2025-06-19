@@ -59,7 +59,7 @@ Route::middleware(['auth', 'role:student,instructor'])->group(function () {
 |
 */
 
-Route::prefix('/api/v1')->group(function () {
+Route::prefix('/api/v1')->middleware('auth')->group(function () {
 
     // ==============================================
     // USERS ROUTES
